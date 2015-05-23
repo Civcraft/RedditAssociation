@@ -1,0 +1,4 @@
+name: RedditAssociationPlugin
+main: vg.civcraft.mc.redditassociation.RedditAssociationPlugin
+version: 1.0
+depends: [NameLayer]
