@@ -37,18 +37,12 @@ public class AddRedditCode extends PlayerCommand{
 			return true;
 		}
 		
-		int code = Integer.parseInt(x[0]);
+		String code = x[0];
 		String redditName = x[1];
 		
-		int playerCode = 0;
-		try {
-			playerCode = Integer.parseInt(args[0]);
-		} catch (NumberFormatException e){
-			p.sendMessage(ChatColor.RED + "That is an invalid code.");
-			return true;
-		}
+		String playerCode = args[0];
 		
-		if (playerCode != code){
+		if (!playerCode.equals(code)){
 			p.sendMessage(ChatColor.RED + "The code you have entered does not match.");
 			return true;
 		}
