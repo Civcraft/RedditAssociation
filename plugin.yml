@@ -1,4 +1,12 @@
-name: RedditAssociationPlugin
+name: ${project.name}
 main: vg.civcraft.mc.redditassociation.RedditAssociationPlugin
-version: 1.0
-depends: [NameLayer]
+version: ${project.version}
+author: Rourke750
+depends: [NameLayer, CivModCore]
+commands:
+ addreddit:
+  aliases: [ar]
+ addredditcode:
+  aliases: [arc]
+ getreddit:
+  aliases: [gr]

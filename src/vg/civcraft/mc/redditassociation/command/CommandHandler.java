@@ -7,8 +7,9 @@ import java.util.Map;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-import vg.civcraft.mc.namelayer.command.Command;
+import vg.civcraft.mc.civmodcore.command.Command;
 import vg.civcraft.mc.redditassociation.command.commands.AddRedditAssociation;
+import vg.civcraft.mc.redditassociation.command.commands.AddRedditCode;
 import vg.civcraft.mc.redditassociation.command.commands.GetRedditAssociation;
 
 public class CommandHandler {
@@ -18,6 +19,7 @@ public Map<String, Command> commands = new HashMap<String, Command>();
 	public void registerCommands(){
 		addCommands(new AddRedditAssociation("addreddit"));
 		addCommands(new GetRedditAssociation("getreddit"));
+		addCommands(new AddRedditCode("addredditcode"));
 	}
 	
 	public void addCommands(Command command){

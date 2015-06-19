@@ -8,7 +8,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import vg.civcraft.mc.namelayer.NameAPI;
-import vg.civcraft.mc.namelayer.command.PlayerCommand;
+import vg.civcraft.mc.civmodcore.command.PlayerCommand;
 import vg.civcraft.mc.redditassociation.RedditAssociationPlugin;
 import vg.civcraft.mc.redditassociation.database.MysqlStorage;
 

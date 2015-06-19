@@ -6,27 +6,29 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 
+import vg.civcraft.mc.civmodcore.annotations.CivConfig;
+import vg.civcraft.mc.civmodcore.annotations.CivConfigType;
+import vg.civcraft.mc.civmodcore.annotations.CivConfigs;
 import vg.civcraft.mc.namelayer.NameAPI;
-import vg.civcraft.mc.namelayer.config.NameConfigListener;
-import vg.civcraft.mc.namelayer.config.NameConfigManager;
-import vg.civcraft.mc.namelayer.config.annotations.NameConfig;
-import vg.civcraft.mc.namelayer.config.annotations.NameConfigType;
-import vg.civcraft.mc.namelayer.config.annotations.NameConfigs;
 import vg.civcraft.mc.redditassociation.RedditAssociationPlugin;
 
-public class MysqlStorage implements NameConfigListener{
+public class MysqlStorage {
 
 	private Database db;
 	private RedditAssociationPlugin plugin;
 	
 	private String addLookUp = "insert ignore into RedditBotLookUp(name, uuid, reddit_name) "
 			+ "values(?,?);";
+	private String addUserToRelations = "insert ignore into RedditRelations (name, uuid, reddit_name) values (?, ?, ?);";
 	private String hasLookUp = "select count(*) as count from RedditRelations "
 			+ "where uuid = ?;";
 	private String getLookUp = "select reddit_name from RedditRelations "
 			+ "where uuid = ?;";
-	
+	private String getCode = "select * from RedditCode where uuid = ?;";
+	private String deleteCode = "delete from RedditCode where uuid = ?;";
+
 	public MysqlStorage(RedditAssociationPlugin plugin){
 		this.plugin = plugin;
 	}
@@ -39,20 +41,20 @@ public class MysqlStorage implements NameConfigListener{
 		initTables();
 	}
 	
-	@NameConfigs({
-		@NameConfig(name = "mysql.username", def = "", type = NameConfigType.String),
-		@NameConfig(name = "mysql.password", def = "", type = NameConfigType.String),
-		@NameConfig(name = "mysql.host", def = "localhost", type = NameConfigType.String),
-		@NameConfig(name = "mysql.dbname", def = "bukkit", type = NameConfigType.String),
-		@NameConfig(name = "mysql.port", def = "3306", type = NameConfigType.Int)
+	@CivConfigs({
+		@CivConfig(name = "mysql.username", def = "", type = CivConfigType.String),
+		@CivConfig(name = "mysql.password", def = "", type = CivConfigType.String),
+		@CivConfig(name = "mysql.host", def = "localhost", type = CivConfigType.String),
+		@CivConfig(name = "mysql.dbname", def = "bukkit", type = CivConfigType.String),
+		@CivConfig(name = "mysql.port", def = "3306", type = CivConfigType.Int)
 	})
 	private boolean initLogin(){
-		NameConfigManager config = NameAPI.getNameConfigManager();
-		String user = config.get(plugin, "mysql.username").getString();
-		String password = config.get(plugin, "mysql.password").getString();
-		String host = config.get(plugin, "mysql.host").getString();
-		String dbname = config.get(plugin, "mysql.dbname").getString();
-		int port = config.get(plugin, "mysql.port").getInt();
+		FileConfiguration config = plugin.getConfig();
+		String user = config.getString("mysql.username");
+		String password = config.getString("mysql.password");
+		String host = config.getString("mysql.host");
+		String dbname = config.getString("mysql.dbname");
+		int port = config.getInt("mysql.port");
 		db = new Database(host, port, dbname, user, password, plugin.getLogger());
 		return db.connect();
 	}
@@ -68,6 +70,11 @@ public class MysqlStorage implements NameConfigListener{
 				+ "uuid varchar(36) not null,"
 				+ "reddit_name varchar(255) not null,"
 				+ "primary key uuid_key(uuid));");
+		db.execute("create table if not exists RedditCode("
+				+ "code int not null,"
+				+ "uuid varchar(36) not null,"
+				+ "reddit_name varchar(255) not null,"
+				+ "primary key uuid_key_code (uuid));");
 	}
 	
 	public void addLookUp(UUID uuid, String reddit_name){
@@ -113,5 +120,44 @@ public class MysqlStorage implements NameConfigListener{
 			e.printStackTrace();
 		}
 		return null;
+	}
+	
+	public void addUserToRelations(UUID uuid, String redditName){
+		PreparedStatement state = db.prepareStatement(addUserToRelations);
+		String name = NameAPI.getCurrentName(uuid);
+		try {
+			state.setString(1, name);
+			state.setString(2, uuid.toString());
+			state.setString(3, redditName);
+			state.execute();
+			deleteCode(uuid);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public String[] getCode(UUID uuid){
+		PreparedStatement state = db.prepareStatement(getCode);
+		try {
+			state.setString(1, uuid.toString());
+			ResultSet set = state.executeQuery();
+			return set.next() ? new String[]{"" + set.getInt("code"), set.getString("reddit_name")} : null;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private void deleteCode(UUID uuid){
+		PreparedStatement statement = db.prepareStatement(deleteCode);
+		try {
+			statement.setString(1, uuid.toString());
+			statement.execute();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
